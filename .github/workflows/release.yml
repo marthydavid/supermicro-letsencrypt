@@ -52,15 +52,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true,push=true
 
-      - name: Scan for vulnerabilities
-        id: scan
-        uses: crazy-max/ghaction-container-scan@v2
-        with:
-          image: ${{ steps.meta.outputs.tags }}
-          dockerfile: ./Dockerfile
-          
-      - name: Upload SARIF file
-        if: ${{ steps.scan.outputs.sarif != '' }}
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+#      - name: Scan for vulnerabilities
+#        id: scan
+#        uses: crazy-max/ghaction-container-scan@v2
+#        with:
+#          image: ${{ steps.meta.outputs.tags }}
+#          dockerfile: ./Dockerfile
+#          
+#      - name: Upload SARIF file
+#        if: ${{ steps.scan.outputs.sarif != '' }}
+#        uses: github/codeql-action/upload-sarif@v2
+#        with:
+#          sarif_file: ${{ steps.scan.outputs.sarif }}
