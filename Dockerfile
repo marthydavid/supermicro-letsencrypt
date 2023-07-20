@@ -1,4 +1,4 @@
-FROM goacme/lego:v4.12.3
+FROM goacme/lego:v4.13.1
 LABEL org.opencontainers.image.source https://github.com/marthydavid/docker-supermicro-letsencrypt
 RUN apk add --no-cache ca-certificates bash openssl  python3-dev py3-pip gcc  musl-dev libffi-dev openssl-dev libxml2-dev libxslt-dev\
     && adduser -u 1000 -D  lego
