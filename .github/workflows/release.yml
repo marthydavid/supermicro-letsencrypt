@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ghcr.io/marthydavid/supermicro-letsencrypt
+  REGISTRY_IMAGE: ghcr.io/marthydavid/docker-supermicro-letsencrypt
 
 jobs:
   build:
