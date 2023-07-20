@@ -1,3 +1,5 @@
+[![release](https://github.com/marthydavid/supermicro-letsencrypt/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/marthydavid/supermicro-letsencrypt/actions/workflows/release.yml)
+
 # supermicro-letsencrypt
 
 Docker container to install Supermicro IPMI TLS certificates via ACME
