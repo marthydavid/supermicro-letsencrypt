@@ -17,7 +17,6 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm/v7
           - linux/arm64
     steps:
       - name: Checkout
@@ -50,7 +49,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},name-canonical=true,push=true
+          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push=true
 
 #      - name: Scan for vulnerabilities
 #        id: scan
