@@ -1,0 +1,21 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sm-letsencrypt
+spec:
+  schedule: "10 */2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sm-letsencrypt
+            image: ghcr.io/supermicro-letsencrypt
+            imagePullPolicy: IfNotPresent
+            envFrom:
+              - configMapRef:
+                  name: sm-impi-info
+              - secretRef:
+                  name: sm-ipmi-secret
+          restartPolicy: OnFailure
