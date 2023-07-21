@@ -2,5 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "github-actions": {
+    "fileMatch": [
+      "^(workflow-templates|\\.github/workflows)/[^/]+\\.ya?ml$",
+      "(^|/)action\\.ya?ml$"
+    ]
+  }
 }
