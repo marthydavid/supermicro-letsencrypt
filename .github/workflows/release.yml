@@ -16,10 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64
     steps:
       - name: Checkout
         uses: actions/checkout@v3.5.3
@@ -56,11 +52,11 @@ jobs:
         uses: docker/build-push-action@v4.1.1
         with:
           context: .
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           push: true
-          provenance: false 
+          provenance: false
           sbom: false
 
 #      - name: Scan for vulnerabilities
