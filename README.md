@@ -42,7 +42,7 @@ docker run -v ~/.aws:/home/lego/.aws \
 ```bash
 kubectl create configmap sm-ipmi-info \
         --from-literal=IPMI_USERNAME=ADMIN \
-        --from-literal=IPMI_ADDRESS=ipmi.my.tld \
+        --from-literal=IPMI_DOMAIN=ipmi.my.tld \
         --from-literal=LE_EMAIL=me@my.tld \
         --from-literal=DNS_PROVIDER=route53 \
         --from-literal=MODEL=X10
