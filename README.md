@@ -5,7 +5,7 @@
 Docker container to install Supermicro IPMI TLS certificates via ACME
 
 
-[python script source](https://gist.githubusercontent.com/mattisz/d112ebfe1869c56ce111ecbd2cbbd04d/raw/569b20ddc8bcc2c04a875de2e9e918570a0cf93a/ipmi-updater.py)
+[python script source](https://gist.github.com/mattisz/d112ebfe1869c56ce111ecbd2cbbd04d/569b20ddc8bcc2c04a875de2e9e918570a0cf93a)
 
 
 # Config options
@@ -14,10 +14,12 @@ Docker container to install Supermicro IPMI TLS certificates via ACME
 |--------|------|---------|
 | IPMI_USERNAME | String | - |
 | IPMI_PASSWORD | String | - |
-| IPMI_ADDRESS  | String | - |
+| IPMI_DOMAIN  | String | - |
 | LE_EMAIL      | String | - |
+| LE_SERVER      | String | https://acme-v02.api.letsencrypt.org/directory |
 | DNS_PROVIDER  | String (options of [go-acme/lego](https://github.com/go-acme/lego#dns-providers) ) | route53 |
 | MODEL         | String (X9-X13) | X11 |
+| FORCE_UPDATE  | bool | false |
 | DEBUG         | any | - |
 
 # Usage with Docker

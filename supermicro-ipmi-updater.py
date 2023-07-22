@@ -283,7 +283,7 @@ class IPMIUpdater:
                 return False
 
 
-            if 'Content-Type' not in result.headers.keys() or result.headers['Content-Type'] != 'text/html':
+            if 'Content-Type' not in result.headers.keys() or 'text/html' not in  result.headers['Content-Type']:
                 # On failure, Content-Type will be 'text/plain' and 'Transfer-Encoding' is 'chunked'
                 return False
             if 'CONFPAGE_RESET' not in result.text:
