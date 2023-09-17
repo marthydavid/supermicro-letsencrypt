@@ -26,6 +26,13 @@
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["patch", "minor"],
+    },
+    {
+      "description": "Auto merge gh releases",
+      "matchDatasources": ["github-releases"],
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["patch", "minor"],
     }
-  ],
+  ]
 }
