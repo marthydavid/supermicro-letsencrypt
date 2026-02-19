@@ -1,4 +1,4 @@
-FROM goacme/lego:v4.30.1
+FROM goacme/lego:v4.32.0
 RUN apk add --no-cache ca-certificates bash openssl python3-dev py3-pip py3-openssl py3-lxml py3-requests py3-urllib3 \
     && adduser -u 1000 -D  lego
 
