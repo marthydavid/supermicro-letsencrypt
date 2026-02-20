@@ -56,9 +56,9 @@ class IPMIUpdater:
     def get_csrf_token(self, url_name):
         if self._csrf_token is not None:
             return self._csrf_token
-        
+
         page_url = self.url_redirect_template % url_name
-        result = self.session.get(page_url)
+        result = self.session.get(page_url, timeout=REQUEST_TIMEOUT, verify=False)
         result.raise_for_status()
 
         match = re.search(r'SmcCsrfInsert\s*\("CSRF_TOKEN",\s*"([^"]*)"\);', result.text)
@@ -124,13 +124,13 @@ class IPMIUpdater:
                 self.session.cookies.set(cookie_name, cookie_value, domain=url_parts.hostname)
 
             return True
-        
+
         else:
             login_data = {
                 'UserName': username,
                 'Password': password
             }
-            
+
             request_headers = {'Content-Type': 'application/json'}
             try:
                 result = self.session.post(self.login_url, data=json.dumps(login_data), headers=request_headers, timeout=REQUEST_TIMEOUT, verify=False)
@@ -164,8 +164,8 @@ class IPMIUpdater:
 
             data = r.json()
 
-            valid_from = datetime.strptime(data['VaildFrom'].rstrip(re.split('\d{4}', data['VaildFrom'])[1]), r"%b %d %H:%M:%S %Y")
-            valid_until = datetime.strptime(data['GoodTHRU'].rstrip(re.split('\d{4}', data['GoodTHRU'])[1]), r"%b %d %H:%M:%S %Y")
+            valid_from = datetime.strptime(data['VaildFrom'].rstrip(re.split(r'\d{4}', data['VaildFrom'])[1]), r"%b %d %H:%M:%S %Y")
+            valid_until = datetime.strptime(data['GoodTHRU'].rstrip(re.split(r'\d{4}', data['GoodTHRU'])[1]), r"%b %d %H:%M:%S %Y")
 
             return  {
                 'has_cert': True,
@@ -459,7 +459,7 @@ class IPMIX11Updater(IPMIUpdater):
             ('cert_file', ('fullchain.pem', cert_data, 'application/octet-stream')),
             ('key_file', ('privkey.pem', key_data, 'application/octet-stream'))
         ]
-    
+
 class IPMIX12Updater(IPMIUpdater):
     def __init__(self, session, ipmi_url):
         super().__init__(session, ipmi_url)
@@ -576,7 +576,7 @@ def main():
     current_valid_until = cert_info.get('valid_until', None)
     if not args.quiet and cert_info['has_cert']:
         print("There exists a certificate, which is valid until: %s" % cert_info['valid_until'])
-    
+
     new_valid_until = parse_valid_until(args.cert_file)
     if current_valid_until == new_valid_until:
         if not args.force_update:
