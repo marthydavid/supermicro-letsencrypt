@@ -78,8 +78,8 @@ if [ "${should_renew}" == "false" ]; then
     exit 0
 fi
 
-# Sign the request and obtain a certificate
-if [ -f ".lego/certificates/${IPMI_DOMAIN}.crt" ]; then
+# Renew only a nonempty certificate; obtain a new one if it is missing or empty.
+if [ -f ".lego/certificates/${IPMI_DOMAIN}.crt" ] && [ -s ".lego/certificates/${IPMI_DOMAIN}.crt" ]; then
     /lego --key-type rsa2048 --server ${LE_SERVER-https://acme-v02.api.letsencrypt.org/directory} --email ${LE_EMAIL} --dns ${DNS_PROVIDER:-route53} --accept-tos --domains ${IPMI_DOMAIN} renew
 else
     /lego --key-type rsa2048 --server ${LE_SERVER-https://acme-v02.api.letsencrypt.org/directory} --email ${LE_EMAIL} --dns ${DNS_PROVIDER:-route53} --accept-tos --domains ${IPMI_DOMAIN} run
