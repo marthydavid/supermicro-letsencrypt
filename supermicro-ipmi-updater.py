@@ -26,7 +26,7 @@ import requests
 import logging
 import json
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timezone
 import xml.etree.ElementTree as etree
 from urllib.parse import urlparse
 
@@ -347,7 +347,7 @@ class IPMIX9Updater(IPMIUpdater):
         self.session.mount('https://', IPMIX9Updater.TLSv1HttpAdapter())
 
     def _get_op_data(self, op, r):
-        timestamp = datetime.utcnow().strftime('%a %d %b %Y %H:%M:%S GMT')
+        timestamp = datetime.now(timezone.utc).strftime('%a %d %b %Y %H:%M:%S GMT')
 
         data = {
             'time_stamp': timestamp  # 'Thu Jul 12 2018 19:52:48 GMT+0300 (FLE Daylight Time)'
@@ -409,7 +409,7 @@ class IPMIX10Updater(IPMIUpdater):
         self.use_b64encoded_login = False
 
     def _get_op_data(self, op, r):
-        timestamp = datetime.utcnow().strftime('%a %d %b %Y %H:%M:%S GMT')
+        timestamp = datetime.now(timezone.utc).strftime('%a %d %b %Y %H:%M:%S GMT')
 
         data = {
             'time_stamp': timestamp  # 'Thu Jul 12 2018 19:52:48 GMT+0300 (FLE Daylight Time)'
