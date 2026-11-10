@@ -25,8 +25,11 @@ import re
 import requests
 import logging
 import json
+import socket
+import ssl
+import time
 from base64 import b64encode
-from datetime import datetime
+from datetime import datetime, timezone
 import xml.etree.ElementTree as etree
 from urllib.parse import urlparse
 
@@ -347,7 +350,7 @@ class IPMIX9Updater(IPMIUpdater):
         self.session.mount('https://', IPMIX9Updater.TLSv1HttpAdapter())
 
     def _get_op_data(self, op, r):
-        timestamp = datetime.utcnow().strftime('%a %d %b %Y %H:%M:%S GMT')
+        timestamp = datetime.now(timezone.utc).strftime('%a %d %b %Y %H:%M:%S GMT')
 
         data = {
             'time_stamp': timestamp  # 'Thu Jul 12 2018 19:52:48 GMT+0300 (FLE Daylight Time)'
@@ -409,7 +412,7 @@ class IPMIX10Updater(IPMIUpdater):
         self.use_b64encoded_login = False
 
     def _get_op_data(self, op, r):
-        timestamp = datetime.utcnow().strftime('%a %d %b %Y %H:%M:%S GMT')
+        timestamp = datetime.now(timezone.utc).strftime('%a %d %b %Y %H:%M:%S GMT')
 
         data = {
             'time_stamp': timestamp  # 'Thu Jul 12 2018 19:52:48 GMT+0300 (FLE Daylight Time)'
@@ -481,6 +484,33 @@ def parse_valid_until(pem):
     with open(pem, 'rb') as fh:
         cert = c.load_certificate(c.FILETYPE_PEM, fh.read())
     return datetime.strptime(cert.get_notAfter().decode('utf8'), "%Y%m%d%H%M%SZ")
+
+def wait_for_served_certificate(ipmi_url, cert_file):
+    from OpenSSL import crypto
+
+    with open(cert_file, 'rb') as fh:
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, fh.read())
+    expected_cert = crypto.dump_certificate(crypto.FILETYPE_ASN1, cert)
+    url = urlparse(ipmi_url)
+
+    # The uploaded leaf certificate itself is the identity check.
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    for attempt in range(12):
+        if attempt:
+            time.sleep(5)
+        try:
+            with socket.create_connection((url.hostname, url.port or 443), REQUEST_TIMEOUT) as connection:
+                with context.wrap_socket(connection, server_hostname=url.hostname) as tls:
+                    if tls.getpeercert(binary_form=True) == expected_cert:
+                        return True
+        except OSError:
+            # HTTPS can be temporarily unavailable during a BMC restart.
+            continue
+    return False
+
 
 def create_updater(args):
     session = requests.session()
@@ -609,7 +639,19 @@ def main():
     if not args.no_reboot:
         if not args.quiet:
             print("Rebooting IPMI to apply changes.")
-        if not updater.reboot_ipmi(args.model, token):
+        try:
+            reboot_ok = updater.reboot_ipmi(args.model, token)
+        except etree.ParseError:
+            if args.model != 'X10':
+                raise
+            print("X10 reboot reply was malformed. Checking the certificate served over HTTPS.", flush=True)
+            if not wait_for_served_certificate(args.ipmi_url, args.cert_file):
+                print("IPMI did not serve the uploaded certificate within the verification window.")
+                exit(2)
+            reboot_ok = True
+            if not args.quiet:
+                print("IPMI is serving the uploaded certificate.")
+        if not reboot_ok:
             print("Rebooting failed! Go reboot it manually?")
 
     if not args.quiet:
