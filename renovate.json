@@ -5,35 +5,34 @@
     "config:recommended",
     "mergeConfidence:all-badges"
   ],
-  "github-actions": {
-    "fileMatch": [
-      "^(workflow-templates|\\.github/workflows)/[^/]+\\.ya?ml$",
-      "(^|/)action\\.ya?ml$"
-    ]
-  },
   "packageRules": [
     {
-      "description": "Auto merge GH action",
+      "description": "Auto merge GH action minor/patch once CI passes",
       "matchManagers": ["github-actions"],
       "matchDatasources": ["github-tags"],
       "automerge": true,
-      "ignoreTests": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["patch", "minor"]
     },
     {
-      "description": "Auto merge container",
+      "description": "Auto merge container minor/patch once CI passes",
       "matchDatasources": ["docker"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["patch", "minor"]
     },
     {
-      "description": "Auto merge gh releases",
+      "description": "Auto merge gh releases minor/patch once CI passes",
       "matchDatasources": ["github-releases"],
       "automerge": true,
       "automergeType": "pr",
       "matchUpdateTypes": ["patch", "minor"]
+    },
+    {
+      "description": "lego v5 changes the CLI (no 'renew', global flags moved), file layout (needs 'lego migrate'), drops CN and switches keys to PKCS#8. Hold until validated against real BMCs.",
+      "matchPackageNames": ["goacme/lego"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }
