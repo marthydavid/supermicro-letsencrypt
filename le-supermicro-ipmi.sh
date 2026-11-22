@@ -71,11 +71,12 @@ updater_args=(
     --cert-file "${CERT_FILE}"
     --key-file "${KEY_FILE}"
     --username "${IPMI_USERNAME}"
-    --password "${IPMI_PASSWORD}"
     --model "${MODEL}"
 )
 if [ "${FORCE_UPDATE}" = "true" ]; then
     updater_args+=(--force-update)
 fi
 
+# The updater reads the password from $IPMI_PASSWORD, keeping it out of the process list.
+export IPMI_PASSWORD
 exec python3 supermicro-ipmi-updater.py "${updater_args[@]}"
