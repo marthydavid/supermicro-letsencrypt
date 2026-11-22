@@ -1,14 +1,13 @@
+# lego v5 changed the CLI, file layout and key encoding; stay on v4 until validated on real BMCs.
 FROM goacme/lego:v4.35.2
-RUN apk add --no-cache ca-certificates bash openssl python3-dev py3-pip py3-openssl py3-lxml py3-requests py3-urllib3 \
-    && adduser -u 1000 -D  lego
+
+RUN apk add --no-cache ca-certificates bash openssl py3-openssl py3-lxml py3-requests py3-urllib3 \
+    && adduser -u 1000 -D lego
 
 USER 1000
-
 WORKDIR /home/lego
 
-ADD le-supermicro-ipmi.sh supermicro-ipmi-updater.py requirements.txt /home/lego/
-
-#RUN pip install -r requirements.txt
+COPY --chmod=755 le-supermicro-ipmi.sh supermicro-ipmi-updater.py /home/lego/
 
 VOLUME /home/lego/.lego
 
