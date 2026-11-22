@@ -19,7 +19,8 @@ Docker container to install Supermicro IPMI TLS certificates via ACME
 | LE_SERVER      | String | https://acme-v02.api.letsencrypt.org/directory |
 | DNS_PROVIDER  | String (options of [go-acme/lego](https://github.com/go-acme/lego#dns-providers) ) | route53 |
 | MODEL         | String (X9-X13) | X11 |
-| FORCE_UPDATE  | bool | false |
+| FORCE_UPDATE  | bool (`true` forces renewal and upload) | false |
+| RENEW_BEFORE_SECONDS | Integer | 2592000 (30 days) |
 | DEBUG         | any | - |
 
 # Usage with Docker
@@ -29,7 +30,7 @@ docker run -v ~/.aws:/home/lego/.aws \
            -v ~/.lego:/home/lego/.lego \
            -e IPMI_USERNAME=ADMIN \
            -e IPMI_PASSWORD=ADMIN \
-           -e IPMI_ADDRESS=ipmi.my.tld \
+           -e IPMI_DOMAIN=ipmi.my.tld \
            -e LE_EMAIL=me@my.tld \
            -e DNS_PROVIDER=route53 \
            -e MODEL=X10 \
@@ -52,7 +53,7 @@ kubectl create secret generic sm-ipmi-secret \
         --from-literal=AWS_SECRET_ACCESS_KEY=blahblahblah
 
 kubectl apply -f demo/kubernetes/cronjob.yaml
-kubectl get cm,secret,cronjob
+kubectl get cm,secret,cronjob,pvc
 
 # To trigger a run:
 
