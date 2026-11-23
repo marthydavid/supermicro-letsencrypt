@@ -247,6 +247,13 @@ class IPMIUpdater:
             # extract certificates only (IMPI doesn't like DH PARAMS)
             cert_data = b'\n'.join(re.findall(b'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', cert_data, re.DOTALL)) + b'\n'
 
+        if model == 'X11':
+            # X11 firmware (verified on 01.74.17) accepts and even reports a multi-certificate
+            # upload, but discards it at the next BMC boot and reverts to the default
+            # certificate. Only the leaf survives, so upload the first certificate only.
+            end_marker = b'-----END CERTIFICATE-----'
+            cert_data = cert_data.split(end_marker)[0] + end_marker + b'\n'
+
         if model == 'X12':
             substr = b'-----END CERTIFICATE-----\n'
             cert_data = cert_data.split(substr)[0] + substr
@@ -511,8 +518,8 @@ def main():
                         help='X.509 Certificate filename')
     parser.add_argument('--username', required=True,
                         help='IPMI username with admin access')
-    parser.add_argument('--password', required=True,
-                        help='IPMI user password')
+    parser.add_argument('--password', default=os.environ.get('IPMI_PASSWORD'),
+                        help='IPMI user password (default: $IPMI_PASSWORD, preferred as it stays out of the process list)')
     parser.add_argument('--no-reboot', action='store_true',
                         help='The default is to reboot the IPMI after upload for the change to take effect.')
     parser.add_argument('--force-update', action='store_true',
@@ -524,6 +531,8 @@ def main():
     args = parser.parse_args()
 
     # Confirm args
+    if not args.password:
+        parser.error('--password or the IPMI_PASSWORD environment variable is required')
     if not os.path.isfile(args.key_file):
         print("--key-file '%s' doesn't exist!" % args.key_file)
         exit(2)

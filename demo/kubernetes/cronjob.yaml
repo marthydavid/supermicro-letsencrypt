@@ -5,17 +5,46 @@ metadata:
   name: sm-letsencrypt
 spec:
   schedule: "10 */2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      backoffLimit: 2
       template:
         spec:
+          restartPolicy: Never
           containers:
-          - name: sm-letsencrypt
-            image: ghcr.io/supermicro-letsencrypt
-            imagePullPolicy: IfNotPresent
-            envFrom:
-              - configMapRef:
-                  name: sm-impi-info
-              - secretRef:
-                  name: sm-ipmi-secret
-          restartPolicy: OnFailure
+            - name: sm-letsencrypt
+              image: ghcr.io/marthydavid/supermicro-letsencrypt:main
+              imagePullPolicy: Always
+              envFrom:
+                - configMapRef:
+                    name: sm-ipmi-info
+                - secretRef:
+                    name: sm-ipmi-secret
+              # Persist the lego account and certificates between runs, otherwise a new
+              # account is registered and a new certificate ordered on every run.
+              volumeMounts:
+                - name: lego
+                  mountPath: /home/lego/.lego
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1000
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+          volumes:
+            - name: lego
+              persistentVolumeClaim:
+                claimName: sm-letsencrypt-lego
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sm-letsencrypt-lego
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 100Mi
