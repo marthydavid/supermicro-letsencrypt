@@ -40,6 +40,9 @@ elif [ -z "${served_cert}" ]; then
 elif ! printf '%s\n' "${served_cert}" | openssl x509 -noout -issuer | grep -q "Let's Encrypt"; then
     echo "Certificate is NOT from Let's Encrypt. Forcing renewal..."
     should_renew="true"
+elif printf '%s\n' "${served_cert}" | openssl x509 -noout -issuer | grep -q "(STAGING)" && [[ "${LE_SERVER}" != *staging* ]]; then
+    echo "Certificate is from the Let's Encrypt STAGING CA but LE_SERVER is production. Forcing renewal..."
+    should_renew="true"
 elif ! printf '%s\n' "${served_cert}" | openssl x509 -noout -checkend "${RENEW_BEFORE_SECONDS}" >/dev/null; then
     echo "Certificate is from Let's Encrypt and expires within ${RENEW_BEFORE_SECONDS}s. Renewing..."
     should_renew="true"
@@ -79,4 +82,20 @@ fi
 
 # The updater reads the password from $IPMI_PASSWORD, keeping it out of the process list.
 export IPMI_PASSWORD
-exec python3 supermicro-ipmi-updater.py "${updater_args[@]}"
+python3 supermicro-ipmi-updater.py "${updater_args[@]}"
+
+# Some BMC firmwares accept the upload, reboot, and then silently fall back to their default
+# certificate. Verify that the BMC really serves the certificate we just installed.
+if [ "${VERIFY_SERVED_CERT:-true}" = "true" ]; then
+    expected="$(openssl x509 -in "${CERT_FILE}" -noout -fingerprint -sha256)"
+    for ((attempt = 1; attempt <= ${VERIFY_ATTEMPTS:-30}; attempt++)); do
+        sleep 10
+        served="$(fetch_served_cert)"
+        if [ -n "${served}" ] && [ "$(printf '%s\n' "${served}" | openssl x509 -noout -fingerprint -sha256)" = "${expected}" ]; then
+            echo "Verified: ${IPMI_DOMAIN} is serving the new certificate."
+            exit 0
+        fi
+    done
+    echo "ERROR: ${IPMI_DOMAIN} is not serving the uploaded certificate after reboot (BMC reverted or is unreachable)." >&2
+    exit 3
+fi

@@ -22,6 +22,24 @@ jobs:
       - name: Hadolint
         run: docker run --rm -i hadolint/hadolint:v2.12.0 < Dockerfile
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.1.0
+
+      - name: Install updater dependencies
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -r requirements.txt
+          echo "${RUNNER_TEMP}/venv/bin" >> "${GITHUB_PATH}"
+
+      - name: Renewal logic
+        run: bash tests/renewal-logic.sh
+
+      - name: Updater unit tests
+        run: python3 -m unittest discover -s tests -v
+
   build:
     runs-on: ubuntu-latest
     steps:
